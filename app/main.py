@@ -44,13 +44,10 @@ def create_app() -> FastAPI:
             await session.execute(text("SELECT 1"))
             checks["database"] = "ok"
 
+        redis_from_url = cast(Any, redis.from_url)
         redis_client = cast(
             Redis,
-            redis.from_url( 
-                settings.redis_url,
-                encoding="utf-8",
-                decode_responses=True,
-            ),
+            redis_from_url(settings.redis_url, encoding="utf-8", decode_responses=True),
         )
         try:
             await redis_client.ping()
