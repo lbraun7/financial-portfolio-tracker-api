@@ -7,12 +7,13 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
-from sqlalchemy import CheckConstraint, Date, DateTime, Enum, ForeignKey, Numeric, String, Text
+from sqlalchemy import CheckConstraint, Date, DateTime, Enum, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import Uuid
 
 from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
 from app.domain.enums import TransactionType
+from app.domain.money import ZERO_DECIMAL, money_numeric, price_numeric, quantity_numeric
 
 if TYPE_CHECKING:
     from app.models.asset import Asset
@@ -52,10 +53,10 @@ class Transaction(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         ),
         nullable=False,
     )
-    quantity: Mapped[Decimal] = mapped_column(Numeric(28, 10), nullable=False)
-    unit_price: Mapped[Decimal] = mapped_column(Numeric(28, 10), nullable=False)
-    fees: Mapped[Decimal] = mapped_column(Numeric(28, 10), nullable=False, default=Decimal("0"))
-    taxes: Mapped[Decimal] = mapped_column(Numeric(28, 10), nullable=False, default=Decimal("0"))
+    quantity: Mapped[Decimal] = mapped_column(quantity_numeric(), nullable=False)
+    unit_price: Mapped[Decimal] = mapped_column(price_numeric(), nullable=False)
+    fees: Mapped[Decimal] = mapped_column(money_numeric(), nullable=False, default=ZERO_DECIMAL)
+    taxes: Mapped[Decimal] = mapped_column(money_numeric(), nullable=False, default=ZERO_DECIMAL)
     currency: Mapped[str] = mapped_column(String(3), nullable=False)
     trade_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     settlement_date: Mapped[date | None] = mapped_column(Date, nullable=True)

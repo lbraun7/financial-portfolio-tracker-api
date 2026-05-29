@@ -7,11 +7,12 @@ from datetime import datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Numeric
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import Uuid
 
 from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
+from app.domain.money import price_numeric, quantity_numeric
 
 if TYPE_CHECKING:
     from app.models.position import Position
@@ -41,9 +42,9 @@ class PositionLot(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         nullable=False,
         index=True,
     )
-    quantity_initial: Mapped[Decimal] = mapped_column(Numeric(28, 10), nullable=False)
-    quantity_open: Mapped[Decimal] = mapped_column(Numeric(28, 10), nullable=False)
-    unit_cost: Mapped[Decimal] = mapped_column(Numeric(28, 10), nullable=False)
+    quantity_initial: Mapped[Decimal] = mapped_column(quantity_numeric(), nullable=False)
+    quantity_open: Mapped[Decimal] = mapped_column(quantity_numeric(), nullable=False)
+    unit_cost: Mapped[Decimal] = mapped_column(price_numeric(), nullable=False)
     acquired_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
     position: Mapped[Position] = relationship("Position", back_populates="lots")

@@ -6,11 +6,12 @@ import uuid
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
-from sqlalchemy import CheckConstraint, ForeignKey, Numeric, UniqueConstraint
+from sqlalchemy import CheckConstraint, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import Uuid
 
 from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
+from app.domain.money import ZERO_DECIMAL, money_numeric, price_numeric, quantity_numeric
 
 if TYPE_CHECKING:
     from app.models.asset import Asset
@@ -40,12 +41,12 @@ class Position(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         nullable=False,
         index=True,
     )
-    quantity: Mapped[Decimal] = mapped_column(Numeric(28, 10), nullable=False)
-    average_cost: Mapped[Decimal] = mapped_column(Numeric(28, 10), nullable=False)
+    quantity: Mapped[Decimal] = mapped_column(quantity_numeric(), nullable=False)
+    average_cost: Mapped[Decimal] = mapped_column(price_numeric(), nullable=False)
     realized_pnl: Mapped[Decimal] = mapped_column(
-        Numeric(28, 10),
+        money_numeric(),
         nullable=False,
-        default=Decimal("0"),
+        default=ZERO_DECIMAL,
     )
 
     portfolio: Mapped[Portfolio] = relationship("Portfolio", back_populates="positions")
