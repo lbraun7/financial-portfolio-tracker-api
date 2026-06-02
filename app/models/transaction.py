@@ -7,7 +7,16 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
-from sqlalchemy import CheckConstraint, Date, DateTime, Enum, ForeignKey, String, Text
+from sqlalchemy import (
+    CheckConstraint,
+    Date,
+    DateTime,
+    Enum,
+    ForeignKey,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import Uuid
 
@@ -26,11 +35,17 @@ class Transaction(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 
     __tablename__ = "transactions"
     __table_args__ = (
+        UniqueConstraint("portfolio_id", "idempotency_key"),
         CheckConstraint("quantity > 0", name="quantity_positive"),
         CheckConstraint("unit_price >= 0", name="unit_price_non_negative"),
         CheckConstraint("fees >= 0", name="fees_non_negative"),
         CheckConstraint("taxes >= 0", name="taxes_non_negative"),
         CheckConstraint("length(currency) = 3", name="currency_length"),
+        CheckConstraint("currency = upper(currency)", name="currency_uppercase"),
+        CheckConstraint(
+            "idempotency_key IS NULL OR length(idempotency_key) > 0",
+            name="idempotency_key_not_empty_when_set",
+        ),
     )
 
     portfolio_id: Mapped[uuid.UUID] = mapped_column(
@@ -50,6 +65,9 @@ class Transaction(UUIDPrimaryKeyMixin, TimestampMixin, Base):
             TransactionType,
             name="transaction_type",
             values_callable=lambda enum_: [member.value for member in enum_],
+            native_enum=False,
+            create_constraint=True,
+            validate_strings=True,
         ),
         nullable=False,
     )

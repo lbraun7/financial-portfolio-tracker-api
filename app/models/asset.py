@@ -21,7 +21,22 @@ class Asset(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "assets"
     __table_args__ = (
         UniqueConstraint("symbol", "exchange", "currency"),
+        CheckConstraint("length(symbol) > 0", name="symbol_not_empty"),
+        CheckConstraint("length(name) > 0", name="name_not_empty"),
         CheckConstraint("length(currency) = 3", name="currency_length"),
+        CheckConstraint("currency = upper(currency)", name="currency_uppercase"),
+        CheckConstraint(
+            "exchange IS NULL OR length(exchange) > 0",
+            name="exchange_not_empty_when_set",
+        ),
+        CheckConstraint(
+            "isin IS NULL OR length(isin) = 12",
+            name="isin_length_when_set",
+        ),
+        CheckConstraint(
+            "isin IS NULL OR isin = upper(isin)",
+            name="isin_uppercase_when_set",
+        ),
     )
 
     symbol: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
@@ -31,6 +46,9 @@ class Asset(UUIDPrimaryKeyMixin, TimestampMixin, Base):
             AssetType,
             name="asset_type",
             values_callable=lambda enum_: [member.value for member in enum_],
+            native_enum=False,
+            create_constraint=True,
+            validate_strings=True,
         ),
         nullable=False,
     )

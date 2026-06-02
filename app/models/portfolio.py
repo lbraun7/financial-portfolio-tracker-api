@@ -23,7 +23,9 @@ class Portfolio(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "portfolios"
     __table_args__ = (
         UniqueConstraint("user_id", "name"),
+        CheckConstraint("length(name) > 0", name="name_not_empty"),
         CheckConstraint("length(base_currency) = 3", name="base_currency_length"),
+        CheckConstraint("base_currency = upper(base_currency)", name="base_currency_uppercase"),
     )
 
     user_id: Mapped[uuid.UUID] = mapped_column(

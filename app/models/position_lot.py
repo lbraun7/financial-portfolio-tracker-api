@@ -7,7 +7,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import Uuid
 
@@ -24,6 +24,7 @@ class PositionLot(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 
     __tablename__ = "position_lots"
     __table_args__ = (
+        UniqueConstraint("source_transaction_id"),
         CheckConstraint("quantity_initial > 0", name="quantity_initial_positive"),
         CheckConstraint("quantity_open >= 0", name="quantity_open_non_negative"),
         CheckConstraint("unit_cost >= 0", name="unit_cost_non_negative"),
