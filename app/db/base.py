@@ -25,7 +25,7 @@ class Base(DeclarativeBase):
     metadata = MetaData(naming_convention=NAMING_CONVENTION)
 
     @declared_attr.directive
-    def __tablename__(cls: type[Base]) -> str:  
+    def __tablename__(cls: type[Base]) -> str:
         return cls.__name__.lower()
 
 
