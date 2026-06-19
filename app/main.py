@@ -11,6 +11,7 @@ from redis.asyncio.client import Redis
 from sqlalchemy import text
 
 from app.api.v1.auth import router as auth_router
+from app.api.v1.portfolios import router as portfolios_router
 from app.core.config import settings
 from app.db.session import AsyncSessionLocal, dispose_engine
 
@@ -59,6 +60,7 @@ def create_app() -> FastAPI:
         return {"status": "ok", "checks": checks}
 
     app.include_router(auth_router, prefix=settings.api_v1_prefix)
+    app.include_router(portfolios_router, prefix=settings.api_v1_prefix)
 
     return app
 
