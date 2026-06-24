@@ -75,6 +75,11 @@ class Transaction(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     unit_price: Mapped[Decimal] = mapped_column(price_numeric(), nullable=False)
     fees: Mapped[Decimal] = mapped_column(money_numeric(), nullable=False, default=ZERO_DECIMAL)
     taxes: Mapped[Decimal] = mapped_column(money_numeric(), nullable=False, default=ZERO_DECIMAL)
+    realized_pnl: Mapped[Decimal] = mapped_column(
+        money_numeric(),
+        nullable=False,
+        default=ZERO_DECIMAL,
+    )
     currency: Mapped[str] = mapped_column(String(3), nullable=False)
     trade_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     settlement_date: Mapped[date | None] = mapped_column(Date, nullable=True)

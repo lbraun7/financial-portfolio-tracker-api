@@ -107,10 +107,16 @@ DELETE /api/v1/portfolios/{id}         # Delete portfolio
 
 ```
 GET    /api/v1/portfolios/{id}/positions               # All positions with current P&L
-POST   /api/v1/portfolios/{id}/transactions            # Record buy/sell/dividend
+POST   /api/v1/portfolios/{id}/transactions            # Record buy/sell
 GET    /api/v1/portfolios/{id}/transactions            # Transaction history
 GET    /api/v1/portfolios/{id}/summary                 # Portfolio P&L summary
 ```
+
+Transaction writes require an `Idempotency-Key` header (1–128 characters). Reusing the
+same key and payload returns the original ledger entry; reusing it with a different payload
+returns `409 Conflict`. BUY fees and taxes are incorporated into acquisition cost, while SELL
+fees and taxes reduce realized P&L. Transactions for an asset must be recorded in chronological
+order so the materialized FIFO lots remain deterministic.
 
 ### P&L Response Example
 
@@ -186,6 +192,8 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 REFRESH_TOKEN_EXPIRE_DAYS=7
 REDIS_URL=redis://localhost:6379
 PRICE_API_KEY=your-price-api-key       # e.g. Alpha Vantage or Yahoo Finance
+PRICE_API_BASE_URL=https://www.alphavantage.co/query
+PRICE_REQUEST_TIMEOUT_SECONDS=10
 PRICE_CACHE_TTL_SECONDS=300
 ```
 
@@ -229,8 +237,8 @@ All database access goes through repositories, keeping SQLAlchemy out of the ser
 - [ ] **Domain & persistence** — users, portfolios, assets, transactions, positions, FIFO lots, migrations, decimal precision policy
 - [ ] **Authentication** — register, login, password hashing, JWT access tokens, refresh token rotation
 - [ ] **Portfolio management** — CRUD endpoints, repositories, service layer, ownership checks
-- [ ] **Transaction engine** — BUY/SELL flows, FIFO cost basis, realized P&L, idempotency keys, atomic position updates
-- [ ] **Pricing & summary** — price provider interface, Redis cache, unrealized P&L, portfolio summary endpoint
+- [x] **Transaction engine** — BUY/SELL flows, FIFO cost basis, realized P&L, idempotency keys, atomic position updates
+- [x] **Pricing & summary** — price provider interface, Redis cache, unrealized P&L, portfolio summary endpoint
 - [ ] **Quality** — unit tests, integration tests, coverage target, Ruff, mypy, pre-commit, GitHub Actions
 - [ ] **Production extras** — rate limiting, structured logging, Docker image, deployment docs
 

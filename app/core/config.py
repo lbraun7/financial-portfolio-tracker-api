@@ -32,6 +32,8 @@ class Settings(BaseSettings):
     refresh_token_expire_days: int = 7
 
     price_api_key: str | None = None
+    price_api_base_url: str = "https://www.alphavantage.co/query"
+    price_request_timeout_seconds: float = 10.0
     price_cache_ttl_seconds: int = 300
 
     model_config = SettingsConfigDict(

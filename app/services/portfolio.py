@@ -7,17 +7,10 @@ from collections.abc import Sequence
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions import PortfolioNameAlreadyExistsError, PortfolioNotFoundError
 from app.models.portfolio import Portfolio
 from app.repositories.portfolios import PortfolioRepository
 from app.schemas.portfolio import PortfolioCreate, PortfolioUpdate
-
-
-class PortfolioNotFoundError(Exception):
-    """Raised when a portfolio is absent or not owned by the user."""
-
-
-class PortfolioNameAlreadyExistsError(Exception):
-    """Raised when a user already has a portfolio with the requested name."""
 
 
 class PortfolioService:

@@ -57,6 +57,7 @@ def test_models_use_domain_numeric_policy() -> None:
     assert numeric_scale(Transaction.__table__.c.unit_price.type) == PRICE_SCALE
     assert numeric_scale(Transaction.__table__.c.fees.type) == MONEY_SCALE
     assert numeric_scale(Transaction.__table__.c.taxes.type) == MONEY_SCALE
+    assert numeric_scale(Transaction.__table__.c.realized_pnl.type) == MONEY_SCALE
 
     assert numeric_scale(Position.__table__.c.quantity.type) == QUANTITY_SCALE
     assert numeric_scale(Position.__table__.c.average_cost.type) == PRICE_SCALE

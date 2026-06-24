@@ -38,6 +38,21 @@ class PortfolioRepository:
         )
         return result.scalar_one_or_none()
 
+    async def get_for_user_for_update(
+        self,
+        *,
+        portfolio_id: uuid.UUID,
+        user_id: uuid.UUID,
+    ) -> Portfolio | None:
+        """Lock and return an owned portfolio for a serialized write."""
+
+        result = await self.session.execute(
+            select(Portfolio)
+            .where(Portfolio.id == portfolio_id, Portfolio.user_id == user_id)
+            .with_for_update()
+        )
+        return result.scalar_one_or_none()
+
     async def get_by_name_for_user(self, *, name: str, user_id: uuid.UUID) -> Portfolio | None:
         """Return a user's portfolio by exact normalized name."""
 

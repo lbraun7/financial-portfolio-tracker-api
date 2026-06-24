@@ -6,7 +6,12 @@ import uuid
 from collections.abc import AsyncIterator, Sequence
 from datetime import UTC, datetime
 
-from app.api.v1.portfolios import portfolio_service
+from app.api.v1.portfolios import portfolio_service, summary_service
+from app.core.exceptions import (
+    PortfolioNameAlreadyExistsError,
+    PortfolioNotFoundError,
+    PriceUnavailableError,
+)
 from app.core.security import create_access_token, hash_password
 from app.db.session import get_async_session
 from app.main import create_app
@@ -14,11 +19,8 @@ from app.models.portfolio import Portfolio
 from app.models.user import User
 from app.repositories.users import UserRepository
 from app.schemas.portfolio import PortfolioCreate, PortfolioUpdate
-from app.services.portfolio import (
-    PortfolioNameAlreadyExistsError,
-    PortfolioNotFoundError,
-    PortfolioService,
-)
+from app.schemas.summary import PortfolioSummary, PositionSummary
+from app.services.portfolio import PortfolioService
 from fastapi.testclient import TestClient
 from pytest import MonkeyPatch
 
@@ -66,6 +68,7 @@ def build_client(
     *,
     user: User | None = None,
     service: PortfolioService | None = None,
+    summary: object | None = None,
 ) -> tuple[TestClient, User]:
     """Return a test client with auth and DB dependencies replaced."""
 
@@ -81,6 +84,8 @@ def build_client(
     app.dependency_overrides[get_async_session] = fake_session
     if service is not None:
         app.dependency_overrides[portfolio_service] = lambda: service
+    if summary is not None:
+        app.dependency_overrides[summary_service] = lambda: summary
 
     return TestClient(app), current_user
 
@@ -247,6 +252,79 @@ def test_delete_portfolio_returns_no_content(monkeypatch: MonkeyPatch) -> None:
 
     assert response.status_code == 204
     assert captured == {"portfolio_id": portfolio_id, "user_id": user.id}
+
+
+def test_get_portfolio_summary_returns_current_valuation(monkeypatch: MonkeyPatch) -> None:
+    user = make_user()
+    portfolio_id = uuid.uuid4()
+
+    class StubSummaryService:
+        async def get_summary(
+            self,
+            *,
+            portfolio_id: uuid.UUID,
+            user_id: uuid.UUID,
+        ) -> PortfolioSummary:
+            assert portfolio_id == expected_portfolio_id
+            assert user_id == user.id
+            return PortfolioSummary(
+                portfolio_id=portfolio_id,
+                base_currency="USD",
+                total_invested="1500",
+                current_value="1785",
+                unrealized_pnl="285",
+                unrealized_pnl_pct="19",
+                realized_pnl="20",
+                positions=[
+                    PositionSummary(
+                        asset_id=uuid.uuid4(),
+                        ticker="AAPL",
+                        currency="USD",
+                        quantity="10",
+                        avg_cost="150",
+                        current_price="178.5",
+                        invested="1500",
+                        current_value="1785",
+                        unrealized_pnl="285",
+                        unrealized_pnl_pct="19",
+                        realized_pnl="20",
+                    )
+                ],
+            )
+
+    expected_portfolio_id = portfolio_id
+    client, current_user = build_client(
+        monkeypatch,
+        user=user,
+        summary=StubSummaryService(),
+    )
+
+    with client:
+        response = client.get(
+            f"/api/v1/portfolios/{portfolio_id}/summary",
+            headers=auth_headers(current_user),
+        )
+
+    assert response.status_code == 200
+    assert response.json()["current_value"] == "1785"
+    assert response.json()["positions"][0]["ticker"] == "AAPL"
+
+
+def test_get_portfolio_summary_maps_price_failure_to_503(monkeypatch: MonkeyPatch) -> None:
+    class StubSummaryService:
+        async def get_summary(self, **_kwargs: object) -> PortfolioSummary:
+            raise PriceUnavailableError
+
+    client, current_user = build_client(monkeypatch, summary=StubSummaryService())
+
+    with client:
+        response = client.get(
+            f"/api/v1/portfolios/{uuid.uuid4()}/summary",
+            headers=auth_headers(current_user),
+        )
+
+    assert response.status_code == 503
+    assert "temporarily unavailable" in response.json()["detail"]
 
 
 def test_portfolio_endpoints_require_authentication(monkeypatch: MonkeyPatch) -> None:
