@@ -195,7 +195,15 @@ PRICE_API_KEY=your-price-api-key       # e.g. Alpha Vantage or Yahoo Finance
 PRICE_API_BASE_URL=https://www.alphavantage.co/query
 PRICE_REQUEST_TIMEOUT_SECONDS=10
 PRICE_CACHE_TTL_SECONDS=300
+RATE_LIMIT_ENABLED=false
+RATE_LIMIT_AUTH_REQUESTS=10
+RATE_LIMIT_AUTH_WINDOW_SECONDS=60
+LOG_LEVEL=INFO
+LOG_JSON=false
 ```
+
+For image builds, production environment variables, migrations, health checks, and an AWS
+deployment outline, see [Deployment Guide](docs/deployment.md).
 
 ---
 
@@ -234,14 +242,15 @@ All database access goes through repositories, keeping SQLAlchemy out of the ser
 
 ## Implementation Roadmap
 
-- [ ] **Foundation** — project structure, `pyproject.toml`, FastAPI app, settings, Docker Compose with PostgreSQL and Redis, async DB sessions, Alembic, healthcheck
-- [ ] **Domain & persistence** — users, portfolios, assets, transactions, positions, FIFO lots, migrations, decimal precision policy
-- [ ] **Authentication** — register, login, password hashing, JWT access tokens, refresh token rotation
-- [ ] **Portfolio management** — CRUD endpoints, repositories, service layer, ownership checks
+- [x] **Foundation** — project structure, `pyproject.toml`, FastAPI app, settings, Docker Compose with PostgreSQL and Redis, async DB sessions, Alembic, healthcheck
+- [x] **Domain & persistence** — users, portfolios, assets, transactions, positions, FIFO lots, migrations, decimal precision policy
+- [x] **Authentication** — register, login, password hashing, JWT access tokens, refresh tokens
+- [x] **Portfolio management** — CRUD endpoints, repositories, service layer, ownership checks
 - [x] **Transaction engine** — BUY/SELL flows, FIFO cost basis, realized P&L, idempotency keys, atomic position updates
 - [x] **Pricing & summary** — price provider interface, Redis cache, unrealized P&L, portfolio summary endpoint
-- [ ] **Quality** — unit tests, integration tests, coverage target, Ruff, mypy, pre-commit, GitHub Actions
-- [ ] **Production extras** — rate limiting, structured logging, Docker image, deployment docs
+- [x] **Quality** — unit tests, integration tests, coverage target, Ruff, mypy, pre-commit, GitHub Actions
+- [x] **Production extras** — rate limiting, structured logging, Docker image, deployment docs
+- [x] **AWS infrastructure** — Terraform for ECS Fargate, ALB, ECR, RDS, ElastiCache, Secrets Manager, and CloudWatch
 
 ### Future Enhancements
 
@@ -249,7 +258,6 @@ All database access goes through repositories, keeping SQLAlchemy out of the ser
 - [ ] Portfolio benchmarking vs IBOV, S&P 500, CDI
 - [ ] CSV import for transaction history
 - [ ] Dividend yield and income tracking
-- [ ] AWS deployment with ECS + RDS + ElastiCache using Terraform
 - [ ] Optional Kubernetes manifests for local or cloud deployment
 
 ---

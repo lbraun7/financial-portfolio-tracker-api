@@ -1,0 +1,22 @@
+aws_region  = "us-east-1"
+environment = "production"
+
+# Keep the first apply at zero. Push the image and run migrations before changing this to 1.
+service_desired_count = 0
+container_image_tag   = "replace-with-git-sha"
+
+# Add an ACM certificate ARN to enable HTTPS and redirect HTTP traffic.
+certificate_arn = null
+
+# Development-sized defaults. Review these before accepting production traffic.
+database_instance_class = "db.t4g.micro"
+database_multi_az       = false
+redis_node_type         = "cache.t4g.micro"
+
+# Pass this with TF_VAR_price_api_key or a secure CI secret rather than committing it here.
+price_api_key = ""
+
+tags = {
+  Owner      = "platform"
+  Repository = "financial-portfolio-tracker-api"
+}

@@ -25,6 +25,12 @@ class Settings(BaseSettings):
     database_echo: bool = False
 
     redis_url: str = "redis://localhost:6379/0"
+    rate_limit_enabled: bool = False
+    rate_limit_auth_requests: int = 10
+    rate_limit_auth_window_seconds: int = 60
+
+    log_level: str = "INFO"
+    log_json: bool = False
 
     secret_key: str = "change-me-in-local-env-with-32-bytes"
     algorithm: str = "HS256"

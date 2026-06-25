@@ -20,3 +20,11 @@ build/
 *.egg-info/
 
 alembic/versions/*.pyc
+
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+terraform.tfvars
+backend.hcl
+crash.log

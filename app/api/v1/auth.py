@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.rate_limit import enforce_auth_rate_limit
 from app.core.security import (
     create_access_token,
     create_refresh_token,
@@ -67,7 +68,12 @@ async def get_current_user(
     return user
 
 
-@router.post("/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/register",
+    response_model=UserRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(enforce_auth_rate_limit)],
+)
 async def register(
     payload: UserCreate,
     session: Annotated[AsyncSession, Depends(get_async_session)],
@@ -89,7 +95,11 @@ async def register(
     )
 
 
-@router.post("/login", response_model=TokenPair)
+@router.post(
+    "/login",
+    response_model=TokenPair,
+    dependencies=[Depends(enforce_auth_rate_limit)],
+)
 async def login(
     payload: UserLogin,
     session: Annotated[AsyncSession, Depends(get_async_session)],
@@ -112,7 +122,11 @@ async def login(
     return build_token_pair(user)
 
 
-@router.post("/refresh", response_model=TokenPair)
+@router.post(
+    "/refresh",
+    response_model=TokenPair,
+    dependencies=[Depends(enforce_auth_rate_limit)],
+)
 async def refresh(
     payload: RefreshTokenRequest,
     session: Annotated[AsyncSession, Depends(get_async_session)],

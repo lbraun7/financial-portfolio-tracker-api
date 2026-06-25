@@ -15,6 +15,7 @@ from app.api.v1.portfolios import router as portfolios_router
 from app.api.v1.positions import router as positions_router
 from app.api.v1.transactions import router as transactions_router
 from app.core.config import settings
+from app.core.logging import RequestLoggingMiddleware, configure_logging
 from app.db.session import AsyncSessionLocal, dispose_engine
 
 
@@ -29,12 +30,14 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
 
+    configure_logging()
     app = FastAPI(
         title=settings.app_name,
         debug=settings.debug,
         version="0.1.0",
         lifespan=lifespan,
     )
+    app.add_middleware(RequestLoggingMiddleware)
 
     @app.get("/health", tags=["health"])
     async def healthcheck() -> dict[str, str]:
