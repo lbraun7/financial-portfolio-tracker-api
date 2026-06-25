@@ -52,8 +52,13 @@ python_functions = ["test_*"]
 addopts = [
     "--strict-config",
     "--strict-markers",
-    "--cov=app",
+    "--cov=app.domain",
+    "--cov=app.services",
     "--cov-report=term-missing",
+    "--cov-fail-under=85",
+]
+markers = [
+    "integration: tests that require PostgreSQL",
 ]
 
 [tool.coverage.run]
@@ -63,7 +68,7 @@ source = ["app"]
 [tool.coverage.report]
 show_missing = true
 skip_covered = true
-fail_under = 0
+fail_under = 85
 exclude_lines = [
     "pragma: no cover",
     "if TYPE_CHECKING:",
@@ -93,11 +98,13 @@ select = [
 ignore = [
     "S104",
     "S105",
+    "S106",
     "S101",
 ]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["S101"]
+"app/db/base.py" = ["N805"]
 
 [tool.mypy]
 python_version = "3.12"

@@ -26,7 +26,7 @@ class Settings(BaseSettings):
 
     redis_url: str = "redis://localhost:6379/0"
 
-    secret_key: str = "change-me-in-local-env"
+    secret_key: str = "change-me-in-local-env-with-32-bytes"
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
     refresh_token_expire_days: int = 7

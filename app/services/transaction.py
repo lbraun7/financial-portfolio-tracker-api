@@ -210,8 +210,7 @@ class TransactionService:
         open_lots = list(await self.positions.list_open_lots_for_update(position.id))
         consumption = consume_fifo(
             lots=[
-                FifoLot(quantity=lot.quantity_open, unit_cost=lot.unit_cost)
-                for lot in open_lots
+                FifoLot(quantity=lot.quantity_open, unit_cost=lot.unit_cost) for lot in open_lots
             ],
             quantity=payload.quantity,
         )

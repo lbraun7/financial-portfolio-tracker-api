@@ -206,6 +206,7 @@ pytest                          # run all tests
 pytest tests/unit               # unit tests only
 pytest tests/integration        # integration tests (requires DB)
 pytest --cov=app --cov-report=html  # coverage report
+pre-commit run --all-files      # Ruff, formatting, mypy, and unit tests
 ```
 
 Tests use a dedicated test database spun up via Docker. All async tests run with `pytest-asyncio`. Coverage target: **>85%** on domain and service layers.
