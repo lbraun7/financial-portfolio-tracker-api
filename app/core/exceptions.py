@@ -51,3 +51,23 @@ class PortfolioCurrencyMismatchError(ValidationError):
 
 class PriceUnavailableError(ApplicationError):
     """Raised when a current market price cannot be obtained."""
+
+
+class EmailAlreadyRegisteredError(ConflictError):
+    """Raised when an email is already associated with a user account."""
+
+
+class InvalidCredentialsError(ApplicationError):
+    """Raised when login credentials do not match an active account."""
+
+
+class InactiveUserError(ApplicationError):
+    """Raised when an authenticated user account is inactive."""
+
+
+class InvalidAccessTokenError(ApplicationError):
+    """Raised when an access token cannot resolve an active user."""
+
+
+class InvalidRefreshTokenError(ApplicationError):
+    """Raised when a refresh token cannot be exchanged."""
