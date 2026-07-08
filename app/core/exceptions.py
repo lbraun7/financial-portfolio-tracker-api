@@ -25,6 +25,18 @@ class AssetNotFoundError(NotFoundError):
     """Raised when an asset does not exist."""
 
 
+class AssetAlreadyExistsError(ConflictError):
+    """Raised when an asset with the requested identifiers already exists."""
+
+
+class AssetLookupNotFoundError(NotFoundError):
+    """Raised when an external asset lookup cannot find a symbol."""
+
+
+class AssetLookupUnavailableError(ApplicationError):
+    """Raised when external asset lookup cannot be performed."""
+
+
 class PortfolioNameAlreadyExistsError(ConflictError):
     """Raised when a user already has a portfolio with the requested name."""
 

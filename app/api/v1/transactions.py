@@ -8,9 +8,12 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Header, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.v1.assets import asset_service as asset_lookup_service
 from app.api.v1.auth import get_current_user
 from app.core.exceptions import (
     AssetCurrencyMismatchError,
+    AssetLookupNotFoundError,
+    AssetLookupUnavailableError,
     AssetNotFoundError,
     IdempotencyConflictError,
     InsufficientPositionError,
@@ -21,6 +24,7 @@ from app.db.session import get_async_session
 from app.models.transaction import Transaction
 from app.models.user import User
 from app.schemas.transaction import TransactionCreate, TransactionRead
+from app.services.asset import AssetService
 from app.services.transaction import TransactionService
 
 router = APIRouter(prefix="/portfolios/{portfolio_id}/transactions", tags=["transactions"])
@@ -57,6 +61,7 @@ async def record_transaction(
     payload: TransactionCreate,
     current_user: Annotated[User, Depends(get_current_user)],
     service: Annotated[TransactionService, Depends(transaction_service)],
+    assets: Annotated[AssetService, Depends(asset_lookup_service)],
     idempotency_key: Annotated[
         str,
         Header(alias="Idempotency-Key", min_length=1, max_length=128),
@@ -65,6 +70,18 @@ async def record_transaction(
     normalized_key = idempotency_key.strip()
     if not normalized_key:
         raise HTTPException(status_code=422, detail="Idempotency-Key must not be blank")
+
+    if payload.asset_id is None and payload.symbol is not None:
+        try:
+            asset = await assets.lookup_asset(payload.symbol)
+        except AssetLookupNotFoundError as exc:
+            raise HTTPException(status_code=404, detail="Asset symbol not found") from exc
+        except AssetLookupUnavailableError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Asset lookup is temporarily unavailable",
+            ) from exc
+        payload = payload.model_copy(update={"asset_id": asset.id, "symbol": None})
 
     try:
         return await service.record(

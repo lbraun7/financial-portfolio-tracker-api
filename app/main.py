@@ -10,6 +10,7 @@ from fastapi import FastAPI
 from redis.asyncio.client import Redis
 from sqlalchemy import text
 
+from app.api.v1.assets import router as assets_router
 from app.api.v1.auth import router as auth_router
 from app.api.v1.portfolios import router as portfolios_router
 from app.api.v1.positions import router as positions_router
@@ -65,6 +66,7 @@ def create_app() -> FastAPI:
         return {"status": "ok", "checks": checks}
 
     app.include_router(auth_router, prefix=settings.api_v1_prefix)
+    app.include_router(assets_router, prefix=settings.api_v1_prefix)
     app.include_router(portfolios_router, prefix=settings.api_v1_prefix)
     app.include_router(transactions_router, prefix=settings.api_v1_prefix)
     app.include_router(positions_router, prefix=settings.api_v1_prefix)

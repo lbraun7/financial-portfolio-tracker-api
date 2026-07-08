@@ -6,7 +6,7 @@ import uuid
 from datetime import UTC, date, datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.domain.enums import TransactionType
 from app.domain.money import (
@@ -19,7 +19,8 @@ from app.domain.money import (
 class TransactionCreate(BaseModel):
     """Payload accepted by the transaction engine."""
 
-    asset_id: uuid.UUID
+    asset_id: uuid.UUID | None = None
+    symbol: str | None = Field(default=None, min_length=1, max_length=32)
     transaction_type: TransactionType
     quantity: Decimal = Field(gt=0)
     unit_price: Decimal = Field(ge=0)
@@ -29,6 +30,22 @@ class TransactionCreate(BaseModel):
     trade_date: datetime
     settlement_date: date | None = None
     notes: str | None = Field(default=None, max_length=2000)
+
+    @model_validator(mode="after")
+    def require_asset_id_or_symbol(self) -> TransactionCreate:
+        if (self.asset_id is None) == (self.symbol is None):
+            raise ValueError("provide exactly one of asset_id or symbol")
+        return self
+
+    @field_validator("symbol")
+    @classmethod
+    def normalize_symbol(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        normalized = value.strip().upper()
+        if not normalized:
+            raise ValueError("symbol must not be blank")
+        return normalized
 
     @field_validator("transaction_type")
     @classmethod

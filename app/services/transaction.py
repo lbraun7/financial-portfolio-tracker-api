@@ -99,7 +99,11 @@ class TransactionService:
                 await self.session.commit()
                 return existing
 
-            asset = await self.assets.get_by_id(payload.asset_id)
+            asset_id = payload.asset_id
+            if asset_id is None:
+                raise AssetNotFoundError
+
+            asset = await self.assets.get_by_id(asset_id)
             if asset is None:
                 raise AssetNotFoundError
             if asset.currency != payload.currency:
@@ -107,19 +111,19 @@ class TransactionService:
 
             latest = await self.transactions.get_latest_for_asset(
                 portfolio_id=portfolio_id,
-                asset_id=payload.asset_id,
+                asset_id=asset_id,
             )
             if latest is not None and payload.trade_date < latest.trade_date:
                 raise OutOfOrderTransactionError
 
             position = await self.positions.get_for_update(
                 portfolio_id=portfolio_id,
-                asset_id=payload.asset_id,
+                asset_id=asset_id,
             )
             if position is None:
                 position = self.positions.add_position(
                     portfolio_id=portfolio_id,
-                    asset_id=payload.asset_id,
+                    asset_id=asset_id,
                 )
                 await self.session.flush()
 
@@ -160,9 +164,13 @@ class TransactionService:
             taxes=payload.taxes,
         )
         existing_lots = await self.positions.list_open_lots_for_update(position.id)
+        asset_id = payload.asset_id
+        if asset_id is None:
+            raise AssetNotFoundError
+
         transaction = self.transactions.add(
             portfolio_id=portfolio_id,
-            asset_id=payload.asset_id,
+            asset_id=asset_id,
             transaction_type=payload.transaction_type,
             quantity=payload.quantity,
             unit_price=payload.unit_price,
@@ -238,9 +246,13 @@ class TransactionService:
             ]
         )
 
+        asset_id = payload.asset_id
+        if asset_id is None:
+            raise AssetNotFoundError
+
         return self.transactions.add(
             portfolio_id=portfolio_id,
-            asset_id=payload.asset_id,
+            asset_id=asset_id,
             transaction_type=payload.transaction_type,
             quantity=payload.quantity,
             unit_price=payload.unit_price,

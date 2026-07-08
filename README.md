@@ -123,6 +123,35 @@ DELETE /api/v1/portfolios/{portfolio_id}
 GET    /api/v1/portfolios/{portfolio_id}/summary
 ```
 
+### Assets
+
+```text
+GET  /api/v1/assets
+POST /api/v1/assets
+POST /api/v1/assets/lookup
+GET  /api/v1/assets/{asset_id}
+```
+
+```json
+{
+  "symbol": "AAPL",
+  "name": "Apple Inc.",
+  "asset_type": "stock",
+  "currency": "USD",
+  "exchange": "NASDAQ",
+  "isin": null
+}
+```
+
+Assets can also be looked up and created from the configured market data
+provider:
+
+```json
+{
+  "symbol": "AAPL"
+}
+```
+
 ### Transactions And Positions
 
 ```text
@@ -161,6 +190,9 @@ Content-Type: application/json
   "notes": "Initial AAPL position"
 }
 ```
+
+Instead of `asset_id`, clients may send `symbol`; the API will look up or create
+the asset before recording the transaction.
 
 Buy transactions incorporate fees and taxes into acquisition cost. Sell
 transactions consume open lots using FIFO and reduce realized P&L by fees and
