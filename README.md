@@ -1,5 +1,11 @@
 # Financial Portfolio Tracker API
 
+[![Quality](https://img.shields.io/github/actions/workflow/status/lucasbraun/financial-portfolio-tracker-api/quality.yml?branch=main&label=quality)](https://github.com/lucasbraun/financial-portfolio-tracker-api/actions/workflows/quality.yml)
+![Python](https://img.shields.io/badge/python-3.12-3776ab)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688)
+![React](https://img.shields.io/badge/React-19-61dafb)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ed)
+
 REST API for tracking investment portfolios, with JWT authentication, idempotent
 transaction recording, average cost/FIFO calculations, and realized/unrealized
 P&L views.
