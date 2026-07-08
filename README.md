@@ -64,8 +64,8 @@ keeps schema evolution explicit and reviewable, which matters for financial
 data where migrations need to be predictable.
 
 **Docker Compose**
-makes the full local environment reproducible: API, PostgreSQL, test database,
-and Redis can be started with one command.
+makes the full local environment reproducible: frontend, API, PostgreSQL, test
+database, and Redis can be started with one command.
 
 **Ruff, mypy, and pytest**
 keep the codebase honest across style, typing, and behavior. The coverage gate
@@ -245,6 +245,7 @@ docker compose up --build
 
 The API is available at:
 
+- `http://localhost:5173`
 - `http://localhost:8000`
 - `http://localhost:8000/docs`
 - `http://localhost:8000/health`
@@ -273,6 +274,17 @@ You can also use the project script:
 ```bash
 poetry run api
 ```
+
+### Frontend Dashboard
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The Vite dev server proxies `/api`, `/health`, and `/ready` to
+`http://localhost:8000`, so keep the API running while using the dashboard.
 
 ## Environment Variables
 

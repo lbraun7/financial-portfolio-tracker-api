@@ -1,4 +1,15 @@
 services:
+  frontend:
+    build:
+      context: .
+      dockerfile: infra/docker/frontend.Dockerfile
+    container_name: portfolio-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      api:
+        condition: service_started
+
   api:
     build:
       context: .

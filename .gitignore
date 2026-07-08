@@ -19,6 +19,9 @@ dist/
 build/
 *.egg-info/
 
+node_modules/
+frontend/dist/
+
 alembic/versions/*.pyc
 
 .terraform/
