@@ -164,6 +164,7 @@ def test_record_transaction_normalizes_and_forwards_payload(monkeypatch: MonkeyP
             payload: TransactionCreate,
             idempotency_key: str,
         ) -> Transaction:
+            assert payload.asset_id is not None
             captured.update(
                 portfolio_id=portfolio_id,
                 user_id=user_id,

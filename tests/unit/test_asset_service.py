@@ -89,8 +89,8 @@ def payload(*, isin: str | None = None) -> AssetCreate:
 
 
 def build_service(repository: AssetRepositoryStub) -> AssetService:
-    service = AssetService(  # type: ignore[arg-type]
-        FakeSession(),
+    service = AssetService(
+        FakeSession(),  # type: ignore[arg-type]
         lookup_provider=AssetLookupProviderStub(),
     )
     service.repository = repository  # type: ignore[assignment]
