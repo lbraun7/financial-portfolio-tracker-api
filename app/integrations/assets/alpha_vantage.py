@@ -66,9 +66,7 @@ class AlphaVantageAssetLookupProvider:
             raise AssetLookupNotFoundError(f"Asset symbol {symbol} was not found")
 
         exact_matches = [
-            match
-            for match in candidates
-            if cls._read_string(match, "1. symbol").upper() == symbol
+            match for match in candidates if cls._read_string(match, "1. symbol").upper() == symbol
         ]
         selected = max(exact_matches or candidates, key=cls._match_score)
 
