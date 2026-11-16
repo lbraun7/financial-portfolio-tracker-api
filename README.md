@@ -456,7 +456,8 @@ throughput under concurrent load.
 
 ## Author
 
-Built by [Lucas Braun](https://github.com/lbraun7).
+Built by [Lucas Braun](https://www.linkedin.com/in/lucas-braun-20235395/). See
+more projects on [GitHub](https://github.com/lbraun7).
 
 ## License
 
