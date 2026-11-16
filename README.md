@@ -11,10 +11,10 @@ recording investment transactions and tracking portfolio performance. Its core
 is an async REST API with JWT authentication, idempotent transaction processing,
 FIFO cost basis, and realized and unrealized P&L calculations.
 
-It demonstrates backend architecture, financial domain modeling, transactional
-consistency, automated testing, and a container-ready cloud deployment
-foundation. A React dashboard provides a functional interface for the main API
-workflows.
+It demonstrates backend architecture, financial
+domain modeling, transactional consistency, automated testing, and a
+container-ready cloud deployment foundation. A React dashboard provides a
+functional interface for the main API workflows.
 
 ## Demo
 
@@ -311,13 +311,13 @@ docker compose up --build
 
 Once the containers are ready, open:
 
-| Service | URL |
-| --- | --- |
-| React dashboard | `http://localhost:5173` |
-| REST API | `http://localhost:8000` |
-| Interactive API docs | `http://localhost:8000/docs` |
-| Liveness check | `http://localhost:8000/health` |
-| Dependency readiness | `http://localhost:8000/ready` |
+| Service              | URL                            |
+| -------------------- | ------------------------------ |
+| React dashboard      | `http://localhost:5173`        |
+| REST API             | `http://localhost:8000`        |
+| Interactive API docs | `http://localhost:8000/docs`   |
+| Liveness check       | `http://localhost:8000/health` |
+| Dependency readiness | `http://localhost:8000/ready`  |
 
 The API container applies all Alembic migrations before starting Uvicorn. Stop
 the environment with `docker compose down`.
@@ -456,8 +456,7 @@ throughput under concurrent load.
 
 ## Author
 
-Built by [Lucas Braun](https://github.com/lbraun7) as a portfolio project focused
-on backend engineering, financial domain modeling, and cloud infrastructure.
+Built by [Lucas Braun](https://github.com/lbraun7).
 
 ## License
 
