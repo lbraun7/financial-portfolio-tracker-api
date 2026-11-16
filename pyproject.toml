@@ -4,6 +4,8 @@ version = "0.1.0"
 description = "REST API for investment portfolio tracking, FIFO cost basis, and P&L calculation."
 authors = [{ name = "Lucas Braun", email = "lucasbraun96@gmail.com" }]
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "alembic>=1.13.3,<2.0.0",

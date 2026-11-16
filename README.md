@@ -6,24 +6,40 @@
 ![React](https://img.shields.io/badge/React-19-61dafb)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ed)
 
-REST API for tracking investment portfolios, with JWT authentication, idempotent
-transaction recording, average cost/FIFO calculations, and realized/unrealized
-P&L views.
+Financial Portfolio Tracker is a production-minded full-stack application for
+recording investment transactions and tracking portfolio performance. Its core
+is an async REST API with JWT authentication, idempotent transaction processing,
+FIFO cost basis, and realized and unrealized P&L calculations.
 
-The project was built as a backend portfolio API focused on financial domain
-modeling, transactional consistency, automated testing, and a container-ready
-deployment foundation.
+It demonstrates backend architecture, financial domain modeling, transactional
+consistency, automated testing, and a container-ready cloud deployment
+foundation. A React dashboard provides a functional interface for the main API
+workflows.
 
-## Engineering Highlights
+## Demo
 
-- Idempotent transaction writes to make client retries safe.
-- FIFO cost basis with realized P&L persisted on sell transactions.
-- Decimal-based money, price, and quantity handling.
-- Async FastAPI and SQLAlchemy stack with explicit transaction boundaries.
-- Redis-backed price caching for portfolio valuation.
-- JWT authentication with refresh token flow and owner-scoped resources.
-- Unit and integration test coverage focused on domain and service behavior.
-- Docker and Terraform assets for local development and cloud deployment.
+![Financial Portfolio Tracker dashboard](docs/images/dashboard.jpg)
+
+The React dashboard covers the primary workflow: authentication, portfolio
+creation, asset lookup, buy and sell recording, and position visualization.
+
+## What This Project Demonstrates
+
+- Layered backend architecture with clear API, service, domain, repository, and
+  persistence boundaries.
+- Financial domain modeling with decimal-based money, price, and quantity
+  handling.
+- Safe financial writes through idempotency keys, database transactions, and
+  row-level locking.
+- FIFO lot consumption with realized P&L persisted on sell transactions and
+  unrealized P&L calculated from current market prices.
+- Async application development with FastAPI, SQLAlchemy, Redis, and external
+  market data integrations.
+- JWT authentication with access and refresh tokens plus owner-scoped resources.
+- Automated unit and PostgreSQL integration tests with coverage, linting,
+  formatting, and strict type checking.
+- Full-stack delivery with a React dashboard, Docker Compose development
+  environment, CI pipeline, and AWS Terraform foundation.
 
 ## What The API Does
 
@@ -39,15 +55,15 @@ deployment foundation.
 
 ## Stack
 
-| Layer | Technology |
-| --- | --- |
-| API | FastAPI, Pydantic v2, Uvicorn |
-| Database | PostgreSQL 16, SQLAlchemy 2 async |
-| Migrations | Alembic |
-| Cache | Redis |
-| Auth | PyJWT, bcrypt |
-| Tests | Pytest, pytest-asyncio, HTTPX, pytest-cov |
-| Quality | Ruff, mypy, pre-commit |
+| Layer          | Technology                                    |
+| -------------- | --------------------------------------------- |
+| API            | FastAPI, Pydantic v2, Uvicorn                 |
+| Database       | PostgreSQL 16, SQLAlchemy 2 async             |
+| Migrations     | Alembic                                       |
+| Cache          | Redis                                         |
+| Auth           | PyJWT, bcrypt                                 |
+| Tests          | Pytest, pytest-asyncio, HTTPX, pytest-cov     |
+| Quality        | Ruff, mypy, pre-commit                        |
 | Infrastructure | Docker Compose, Dockerfile, Terraform for AWS |
 
 ## Why This Stack
@@ -80,6 +96,23 @@ risk lives.
 
 ## Architecture
 
+The application uses a layered architecture so HTTP concerns, business rules,
+and persistence can evolve independently.
+
+```mermaid
+flowchart LR
+    Client[React dashboard / API client] --> Routes[FastAPI routes]
+    Routes --> Services[Application services]
+    Services --> Domain[Financial domain rules]
+    Services --> Repositories[Repositories]
+    Repositories --> PostgreSQL[(PostgreSQL)]
+    Services --> Pricing[Price service]
+    Pricing --> Redis[(Redis cache)]
+    Pricing --> Provider[Alpha Vantage]
+```
+
+### Code Organization
+
 ```text
 app/
 ├── api/v1/              # HTTP routes and FastAPI dependencies
@@ -97,6 +130,32 @@ app/
 The boundaries are intentional: domain rules stay out of the routes, services
 coordinate use cases, and repositories own persistence. Critical writes run
 inside database transactions so the ledger, positions, and lots stay consistent.
+
+### Transaction Write Flow
+
+Transaction recording is the main consistency boundary and the most important
+write path in the application.
+
+```mermaid
+flowchart TD
+    Request[POST transaction] --> Auth[Authenticate user and verify ownership]
+    Auth --> Lock[Lock portfolio and position rows]
+    Lock --> Validate[Validate idempotency, asset, currency, and chronology]
+    Validate --> Type{Transaction type}
+    Type -->|Buy| Buy[Create ledger entry and FIFO lot]
+    Type -->|Sell| Sell[Consume FIFO lots and calculate realized P&L]
+    Buy --> Position[Update materialized position]
+    Sell --> Position
+    Position --> Commit[Commit all changes atomically]
+```
+
+The immutable transaction ledger remains the audit trail, while positions and
+open lots are materialized projections for efficient reads. Repeated requests
+with the same idempotency key are safe, and row-level locks serialize concurrent
+writes affecting the same portfolio state.
+
+See [`docs/architecture.md`](docs/architecture.md) for the complete request,
+consistency, and portfolio summary flows.
 
 ## Endpoints
 
@@ -238,28 +297,37 @@ The summary endpoint fetches prices from the configured provider and caches them
 in Redis. If the provider is not configured or is unavailable, the endpoint may
 return `503 Service Unavailable`.
 
-## Run With Docker
+## Quick Start
 
-Prerequisites:
-
-- Docker and Docker Compose
+The fastest way to run the complete stack is with Docker Compose. The only
+prerequisite is Docker with the Compose plugin.
 
 ```bash
+git clone https://github.com/lbraun7/financial-portfolio-tracker-api.git
+cd financial-portfolio-tracker-api
 cp .env.example .env
 docker compose up --build
 ```
 
-The API is available at:
+Once the containers are ready, open:
 
-- `http://localhost:5173`
-- `http://localhost:8000`
-- `http://localhost:8000/docs`
-- `http://localhost:8000/health`
-- `http://localhost:8000/ready`
+| Service | URL |
+| --- | --- |
+| React dashboard | `http://localhost:5173` |
+| REST API | `http://localhost:8000` |
+| Interactive API docs | `http://localhost:8000/docs` |
+| Liveness check | `http://localhost:8000/health` |
+| Dependency readiness | `http://localhost:8000/ready` |
 
-The `api` service runs `alembic upgrade head` before starting Uvicorn.
+The API container applies all Alembic migrations before starting Uvicorn. Stop
+the environment with `docker compose down`.
 
-## Run Locally
+> [!NOTE]
+> Asset lookup and live portfolio valuation require an Alpha Vantage API key.
+> Set `PRICE_API_KEY` in `.env` to enable them. Without a key, assets can still
+> be created manually through the API and transactions can use `asset_id`.
+
+## Manual Setup
 
 Prerequisites:
 
@@ -385,3 +453,12 @@ against duplicate client or queue retries.
 **Async end to end**
 FastAPI, SQLAlchemy, Redis, and price integrations use async APIs to preserve
 throughput under concurrent load.
+
+## Author
+
+Built by [Lucas Braun](https://github.com/lbraun7) as a portfolio project focused
+on backend engineering, financial domain modeling, and cloud infrastructure.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
